@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <link rel="icon" href="src/linux.png">
+    <title>Mohammad Yousefi · Linux Terminal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f1a, #03060c);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+            padding: 1.5rem;
+        }
+        .linux-terminal {
+            max-width: 1400px;
+            width: 95%;
+            background: #0c0f14;
+            border-radius: 1rem;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.8), 0 0 0 1px rgba(0,255,0,0.15);
+            overflow: hidden;
+            backdrop-filter: blur(1px);
+            transition: all 0.2s;
+        }
+        .term-bar {
+            background: #1e1f2c;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 1px solid #2a2f3f;
+        }
+        .term-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .term-btn {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+        }
+        .close { background: #ff5f56; }
+        .minimize { background: #ffbd2e; }
+        .maximize { background: #27c93f; }
+        .term-title {
+            color: #9cdb7c;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            opacity: 0.8;
+            font-family: monospace;
+        }
+        .term-title i {
+            font-style: normal;
+            color: #6abf69;
+        }
+
+        .terminal-body {
+            background: #0a0c10;
+            padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-output {
+            flex-grow: 1;
+            max-height: 650px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            scroll-behavior: smooth;
+        }
+        .terminal-output::-webkit-scrollbar {
+            width: 6px;
+        }
+        .terminal-output::-webkit-scrollbar-track {
+            background: #1a1e26;
+            border-radius: 8px;
+        }
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: #3c4458;
+            border-radius: 8px;
+        }
+
+        .output-line {
+            color: #c0e0b0;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+            border-left: 2px solid transparent;
+            transition: 0.05s linear;
+        }
+        .output-line a {
+            color: #6ae86a;
+            text-decoration: none;
+            border-bottom: 1px dotted #6ae86a;
+        }
+        .output-line a:hover {
+            color: #aaffaa;
+            text-shadow: 0 0 4px #2eff7a;
+            border-bottom: 1px solid #aaffaa;
+        }
+        .prompt-line {
+            color: #b3ff9b;
+        }
+        .command-cmd {
+            color: #ecf5e1;
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 1.2rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid #262b36;
+            flex-wrap: wrap;
+        }
+        .prompt-prefix {
+            color: #6fcf6f;
+            font-weight: 500;
+            font-size: 1rem;
+            font-family: monospace;
+            white-space: nowrap;
+            background: #14181f;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            letter-spacing: 0.3px;
+        }
+        .input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #d0f0c0;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 1rem;
+            outline: none;
+            padding: 0.4rem 0;
+            caret-color: #8aff80;
+        }
+        .input-field::placeholder {
+            color: #3f4b5e;
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+        @media (max-width: 640px) {
+            .terminal-body {
+                padding: 1rem;
+            }
+            .output-line {
+                font-size: 0.85rem;
+            }
+            .prompt-prefix {
+                font-size: 0.8rem;
+            }
+        }
+
+        .input-field:focus {
+            caret-color: #8eff8e;
+        }
+        .glow-effect {
+            animation: softGlow 1.2s infinite;
+        }
+        @keyframes softGlow {
+            0% { text-shadow: 0 0 0px #8aff8a; }
+            100% { text-shadow: 0 0 2px #b0ffa0; }
+        }
+        .separator-dash {
+            color: #4d705a;
+        }
+        .ascii-hint {
+            color: #4c6e3c;
+            font-size: 0.7rem;
+        }
+        .input-field, .prompt-prefix {
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="linux-terminal">
+    <div class="term-bar">
+        <div class="term-buttons">
+            <div class="term-btn close"></div>
+            <div class="term-btn minimize"></div>
+            <div class="term-btn maximize"></div>
+        </div>
+        <div class="term-title">
+            <i>mohammad@fedora:~</i> — /home/mohammad/
+        </div>
+    </div>
+    <div class="terminal-body">
+        <div id="termOutput" class="terminal-output">
+        </div>
+        <div class="terminal-input-line">
+            <span class="prompt-prefix">┌─[mohammad@fedora]──[~]<br>└─╼$</span>
+            <input type="text" id="termInput" class="input-field" placeholder="type 'help' to start ..." autofocus>
+        </div>
+    </div>
+</div>
+
+<script>
+    
+    const GITHUB_URL = "https://github.com/PyScriptPlus";
+    const FULL_NAME = "Mohammad Yousefi (محمد یوسفی)";
+    const SKILLS_TEXT = "C, C++, C#, Assembly (x86/ARM), low-level optimization, embedded systems, reverse engineering basics.";
+    
+    const outputDiv = document.getElementById("termOutput");
+    const inputField = document.getElementById("termInput");
+    
+    let commandHistory = [];
+    let historyIndex = -1;
+    let currentInputBackup = "";
+    
+    const PROMPT_PREFIX = "┌─[mohammad@fedora]──[~]\n└─╼$ ";
+    
+    function scrollToBottom() {
+        const outputContainer = document.querySelector(".terminal-output");
+        if (outputContainer) outputContainer.scrollTop = outputContainer.scrollHeight;
+    }
+    
+    function addOutputLine(text, isHtml = false) {
+        const lineDiv = document.createElement("div");
+        lineDiv.className = "output-line";
+        if (isHtml) {
+            lineDiv.innerHTML = text;
+        } else {
+            lineDiv.textContent = text;
+        }
+        outputDiv.appendChild(lineDiv);
+        scrollToBottom();
+    }
+    
+    function addCommandLine(userCommand) {
+        const cmdDiv = document.createElement("div");
+        cmdDiv.className = "output-line prompt-line";
+        cmdDiv.innerHTML = `<span style="color:#9fcc8a;">┌─[mohammad@fedora]──[~]</span><br><span style="color:#c2f0a0;">└─╼$</span> <span class="command-cmd">${escapeHtml(userCommand)}</span>`;
+        outputDiv.appendChild(cmdDiv);
+        scrollToBottom();
+    }
+    
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+    
+    function clearTerminal() {
+        outputDiv.innerHTML = '';
+    }
+    
+    function showWelcomeMessage() {
+        addOutputLine("┌────────────────────────────────────────────────────────────┐", false);
+        addOutputLine("│                 ///    C++ LOW-LEVEL ZONE    ///           │", false);
+        addOutputLine("│        ___   ___   ___   ___   ___   ___   ___   ___       │", false);
+        addOutputLine("│       |C++| |ASM| |C|  |C#| |GCC| |LLVM| |GDB| |NASM|      │", false);
+        addOutputLine("│        ‾‾‾   ‾‾‾   ‾‾‾   ‾‾‾   ‾‾‾   ‾‾‾   ‾‾‾   ‾‾‾       │", false);
+        addOutputLine("│                   Mohammad Yousefi · Systems               │", false);
+        addOutputLine("└────────────────────────────────────────────────────────────┘", false);
+        addOutputLine("", false);
+        addOutputLine(` WELCOME, ${FULL_NAME} `, false);
+        addOutputLine("", false);
+        addOutputLine(`  Role      :  Systems & Low-level Programmer`, false);
+        addOutputLine(`  Languages :  ${SKILLS_TEXT}`, false);
+        addOutputLine(`  Passion   :  Compilers, Embedded Linux, Assembly wizardry & native code`, false);
+        addOutputLine("", false);
+        // GitHub link as clickable HTML (Linux style)
+        const githubHtml = `  GitHub     :  <a href="${GITHUB_URL}" target="_blank" rel="noopener noreferrer">${GITHUB_URL}</a>  (repos with C/C++/C#/Asm)`;
+        addOutputLine(githubHtml, true);
+        addOutputLine("", false);
+        addOutputLine("  Tip:  use 'help' to list all commands. Enjoy the terminal vibe!", false);
+        addOutputLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", false);
+    }
+    
+    function processCommand(cmdRaw) {
+        const cmd = cmdRaw.trim();
+        if (cmd === "") return;
+        
+        if (commandHistory.length === 0 || commandHistory[commandHistory.length-1] !== cmd) {
+            commandHistory.push(cmd);
+            if (commandHistory.length > 50) commandHistory.shift();
+        }
+        historyIndex = commandHistory.length;
+        
+        addCommandLine(cmd);
+        
+        const lowerCmd = cmd.toLowerCase();
+        
+        // ---- HELP ----
+        if (lowerCmd === "help") {
+            addOutputLine("  ╭─────────────────────────────────────────────────╮", false);
+            addOutputLine("  │  AVAILABLE COMMANDS                             │", false);
+            addOutputLine("  ├─────────────────────────────────────────────────┤", false);
+            addOutputLine("  │  about     →  biography & programming path      │", false);
+            addOutputLine("  │  skills    →  detailed language expertise       │", false);
+            addOutputLine("  │  github    →  show my GitHub profile link       │", false);
+            addOutputLine("  │  whoami    →  display my identity               │", false);
+            addOutputLine("  │  welcome   →  print the welcome banner again    │", false);
+            addOutputLine("  │  clear     →  clear terminal screen             │", false);
+            addOutputLine("  │  history   →  show command history              │", false);
+            addOutputLine("  │  c / cpp   →  C/C++ philosophy & experience     │", false);
+            addOutputLine("  │  asm       →  assembly (low-level) zone         │", false);
+            addOutputLine("  │  csharp    →  C# & .NET interop / native bridge │", false);
+            addOutputLine("  │  neofetch  →  simple dev fetch style            │", false);
+            addOutputLine("  │  help      →  this message                      │", false);
+            addOutputLine("  ╰─────────────────────────────────────────────────╯", false);
+            return;
+        }
+        
+        // ---- ABOUT ----
+        if (lowerCmd === "about") {
+            addOutputLine("    [ BIO ]", false);
+            addOutputLine(`    • ${FULL_NAME} — passionate low-level software architect.`, false);
+            addOutputLine(`    • Deep experience in systems programming, firmware, and performance.`, false);
+            addOutputLine(`    • Daily tools: C, C++, C#, Assembly, Make, GDB, Valgrind, NASM.`, false);
+            addOutputLine(`    • Love crafting efficient code from kernel to userland.`, false);
+            addOutputLine(`    • Contributor to open-source projects & embedded solutions.`, false);
+            return;
+        }
+        
+        // ---- SKILLS (detailed) ----
+        if (lowerCmd === "skills") {
+            addOutputLine("    [ SKILL MATRIX ]", false);
+            addOutputLine("    ▶  C (C11/C17)        : memory management, pointers, embedded", false);
+            addOutputLine("    ▶  C++ (14/17/20)     : RAII, templates, STL, modern patterns", false);
+            addOutputLine("    ▶  C# (.NET)          : interop, unsafe code, high-performance APIs", false);
+            addOutputLine("    ▶  Assembly (x86/ARM) : reverse engineering, bootloaders, optimization", false);
+            addOutputLine("    ▶  Scripting & tools  : Bash, Python, GDB scripting, perf", false);
+            addOutputLine("    ▶  Version control    : Git / GitHub (CI, actions)", false);
+            return;
+        }
+        
+        // ---- GITHUB (interactive HTML link) ----
+        if (lowerCmd === "github") {
+            const gitMsg = `  My GitHub repository hub: <a href="${GITHUB_URL}" target="_blank" rel="noopener noreferrer" style="color:#78ff78;">${GITHUB_URL}</a>  (C/C++/Asm projects, snippets, cool low-level stuff)`;
+            addOutputLine(gitMsg, true);
+            return;
+        }
+        
+        // ---- WHOAMI (full name + persian) ----
+        if (lowerCmd === "whoami") {
+            addOutputLine(`    ${FULL_NAME}`, false);
+            addOutputLine(`    • "Code is poetry, assembly is raw power."`, false);
+            addOutputLine(`    • Specialized in C family & assembly · performance geek`, false);
+            return;
+        }
+        
+        // ---- WELCOME (reprint banner without duplicate huge ASCII maybe simple) ----
+        if (lowerCmd === "welcome") {
+            addOutputLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", false);
+            addOutputLine(`    RE-WELCOME, ${FULL_NAME}`, false);
+            addOutputLine(`    Languages  →  ${SKILLS_TEXT}`, false);
+            const ghSimple = `    GitHub     →  <a href="${GITHUB_URL}" target="_blank">${GITHUB_URL}</a>`;
+            addOutputLine(ghSimple, true);
+            addOutputLine("    Status     :  Ready for low-level challenges", false);
+            addOutputLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", false);
+            return;
+        }
+        
+        // ---- CLEAR ----
+        if (lowerCmd === "clear") {
+            clearTerminal();
+            return;
+        }
+        
+        // ---- HISTORY ----
+        if (lowerCmd === "history") {
+            if (commandHistory.length === 0) {
+                addOutputLine("(no commands in history yet)", false);
+            } else {
+                addOutputLine("─── command history ───", false);
+                commandHistory.forEach((entry, idx) => {
+                    addOutputLine(`  ${idx+1}   ${entry}`, false);
+                });
+                addOutputLine("──────────────────────", false);
+            }
+            return;
+        }
+        
+        // ---- C / CPP specific flavor ----
+        if (lowerCmd === "c" || lowerCmd === "cpp" || lowerCmd === "c++") {
+            addOutputLine("    C / C++ ZONE", false);
+            addOutputLine("    • 7+ years of combined systems programming", false);
+            addOutputLine("    • Expert in: pointers, virtual memory, compiler intrinsics, STL internals", false);
+            addOutputLine("    • Notable: custom memory allocators, lock-free data structures", false);
+            addOutputLine("    • Low latency & embedded real-time C++", false);
+            return;
+        }
+        
+        // ---- ASSEMBLY specific ----
+        if (lowerCmd === "asm" || lowerCmd === "assembly") {
+            addOutputLine("    ASSEMBLY (x86_64, ARMv7, AArch64)", false);
+            addOutputLine("    • Hand-optimized routines, shellcode analysis, SMM/BIOS experiments", false);
+            addOutputLine("    • Extensive use of SIMD (MMX/SSE/AVX) for numeric kernels", false);
+            addOutputLine("    • Reverse engineering & debugging with GDB/radare2", false);
+            addOutputLine("    • Favorite quote: 'C is portable assembly.'", false);
+            return;
+        }
+        
+        // ---- CSHARP interesting context ----
+        if (lowerCmd === "csharp" || lowerCmd === "c#") {
+            addOutputLine("    C# & .NET Ecosystem", false);
+            addOutputLine("    • Writing high-performance C# with Span<T>, unsafe, memory-mapped files", false);
+            addOutputLine("    • Native interop: P/Invoke, C++/CLI bridges, COM, low-level Win32", false);
+            addOutputLine("    • Used for tooling, game modding, and performance-critical backends", false);
+            return;
+        }
+
+
+    //     if (lowerCmd === "neofetch") {
+    //     addOutputLine("       .--.       mohammad@fedora-machine", false);
+    //     addOutputLine("      |o_o |      OS: Fedora Linux 40 (Workstation)", false);
+    //     addOutputLine("      |:_/ |      Shell: zsh / bash 5.2", false);
+    //     addOutputLine("     //   \\ \\   Languages: C, C++, C#, Assembly", false);
+    //     addOutputLine("    (|     | )    Experience: low-level dev & kernel", false);
+    //     addOutputLine("    /'\\_   _/`\\ Uptime: infinite (passion)", false);
+    //     addOutputLine("    \\___)=(___/  GitHub: " + GITHUB_URL.replace("https://github.com/", ""), false);
+    //     addOutputLine("                  Terminal: this awesome Linux-like site", false);
+    //     return;
+    // }
+        if (lowerCmd === "neofetch") {
+        addOutputLine("       .--.       mohammad@fedora-machine", false);
+        addOutputLine("      |o_o |      OS: Fedora Linux 40 (Workstation)", false);
+        addOutputLine("      |:_/ |      Shell: zsh / bash 5.2", false);
+        addOutputLine("     //   \\ \\     Languages: C, C++, C#, Assembly", false);
+        addOutputLine("    (|     | )    Experience: low-level dev & kernel", false);
+        addOutputLine("    /'\\_   _/`\\   Uptime: infinite (passion)", false);
+        addOutputLine("    \\___)=(___/   GitHub: " + GITHUB_URL.replace("https://github.com/", ""), false);
+        addOutputLine("                  Terminal: this awesome Linux-like site", false);
+        return;
+    }
+        
+        // // ---- NEOFETCH style (simple dev info) ----
+        // if (lowerCmd === "neofetch") {
+        //     addOutputLine("        .-.-.   mohammad@fedora-machine", false);
+        //     addOutputLine("       |'---'|  OS: Linux mindset (arch + fedora heritage)", false);
+        //     addOutputLine("       |_____|  Shell: zsh / bash 5.2", false);
+        //     addOutputLine("      .'     '.  Experience: low-level dev & kernel tinkering", false);
+        //     addOutputLine("     /  /   \\  \\ Languages: C, C++, C#, Assembly", false);
+        //     addOutputLine("    |  |     |  | Uptime: infinite (passion)", false);
+        //     addOutputLine("     \\  \\___/  /  GitHub: " + GITHUB_URL.replace("https://github.com/", ""), false);
+        //     addOutputLine("      '._   _.'   Terminal: this awesome Linux-like site", false);
+        //     addOutputLine("         '-'", false);
+        //     return;
+        // }
+        
+        // ---- Extra: ls / echo for fun (optional unix feel) ----
+        if (lowerCmd === "ls") {
+            addOutputLine("Desktop/   Documents/   Projects/   LowLevel_Asm/   C_Playground/   dotfiles/", false);
+            addOutputLine("README.md  kernel_module.c  reverse_eng/  Makefile  .bashrc  github_repos.list", false);
+            return;
+        }
+        if (lowerCmd.startsWith("echo ")) {
+            let echoMsg = cmd.substring(5);
+            addOutputLine(echoMsg, false);
+            return;
+        }
+        
+        if (lowerCmd === "pwd") {
+            addOutputLine("/home/mohammad/portfolio/terminal_site", false);
+            return;
+        }
+        
+        if (lowerCmd === "date") {
+            const now = new Date();
+            addOutputLine(now.toString(), false);
+            return;
+        }
+        
+        addOutputLine(`bash: ${cmd}: command not found. Try 'help' to see available commands.`, false);
+    }
+    
+    function setupTerminalHistory() {
+        inputField.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp") {
+                e.preventDefault();
+                if (commandHistory.length === 0) return;
+                if (historyIndex === commandHistory.length) {
+                    currentInputBackup = inputField.value;
+                }
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    inputField.value = commandHistory[historyIndex];
+                } else if (historyIndex === 0) {
+                    inputField.value = commandHistory[0];
+                }
+                inputField.setSelectionRange(inputField.value.length, inputField.value.length);
+            } 
+            else if (e.key === "ArrowDown") {
+                e.preventDefault();
+                if (commandHistory.length === 0) return;
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    inputField.value = commandHistory[historyIndex];
+                } else if (historyIndex === commandHistory.length - 1) {
+                    historyIndex = commandHistory.length;
+                    inputField.value = currentInputBackup;
+                }
+                inputField.setSelectionRange(inputField.value.length, inputField.value.length);
+            }
+        });
+    }
+    
+    // send command on Enter
+    function onCommandSubmit(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const rawCommand = inputField.value;
+            if (rawCommand.trim() !== "") {
+                processCommand(rawCommand);
+            }
+            inputField.value = "";
+            // reset history navigation index
+            historyIndex = commandHistory.length;
+            currentInputBackup = "";
+            // focus remains
+            inputField.focus();
+        }
+    }
+    
+    function initTerminal() {
+        showWelcomeMessage();        // display bio + github + name + skills as required
+        inputField.addEventListener("keypress", onCommandSubmit);
+        setupTerminalHistory();
+        inputField.focus();
+        // optional: add a small initial pointer
+        addOutputLine("", false);
+        addOutputLine("   Terminal ready. Type 'help' to explore commands.", false);
+        scrollToBottom();
+    }
+    
+    initTerminal();
+</script>
+</body>
+</html>
