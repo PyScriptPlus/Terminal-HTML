@@ -400,7 +400,7 @@
         // ---- C / CPP specific flavor ----
         if (lowerCmd === "c" || lowerCmd === "cpp" || lowerCmd === "c++") {
             addOutputLine("    C / C++ ZONE", false);
-            addOutputLine("    • 7+ years of combined systems programming", false);
+            addOutputLine("    • 4+ years of combined systems programming", false);
             addOutputLine("    • Expert in: pointers, virtual memory, compiler intrinsics, STL internals", false);
             addOutputLine("    • Notable: custom memory allocators, lock-free data structures", false);
             addOutputLine("    • Low latency & embedded real-time C++", false);
@@ -477,13 +477,18 @@
         }
         
         if (lowerCmd === "pwd") {
-            addOutputLine("/home/mohammad/portfolio/terminal_site", false);
+            addOutputLine("/home/mohammad/", false);
             return;
         }
         
         if (lowerCmd === "date") {
             const now = new Date();
             addOutputLine(now.toString(), false);
+            return;
+        }
+        if(lowerCmd == "download")
+        {
+            addOutputLine("Coming soon!!!");
             return;
         }
         
