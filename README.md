@@ -20,8 +20,11 @@
 ---
 
 ## Preview
+<img width="2049" height="1152" alt="Image" src="https://github.com/user-attachments/assets/83ea868d-9d75-44ea-b27f-a0b47cb4e848"/>
 
-> *(Add your terminal screenshot here.)*
+<img width="2049" height="1152" alt="Image" src="https://github.com/user-attachments/assets/314223ae-b740-41c9-87d7-4a360feff589" />
+
+<img width="2049" height="1152" alt="Image" src="https://github.com/user-attachments/assets/1a385085-0195-404f-91c8-60124666f776" />
 
 ---
 
@@ -157,8 +160,11 @@ Inspired by the beauty and power of Linux terminals.
 ---
 
 ## پیش‌نمایش
+<img width="2049" height="1152" alt="Image" src="https://github.com/user-attachments/assets/83ea868d-9d75-44ea-b27f-a0b47cb4e848" />
 
-> *(تصویر ترمینال را اینجا اضافه کنید.)*
+<img width="2049" height="1152" alt="Image" src="https://github.com/user-attachments/assets/314223ae-b740-41c9-87d7-4a360feff589" />
+
+<img width="2049" height="1152" alt="Image" src="https://github.com/user-attachments/assets/1a385085-0195-404f-91c8-60124666f776" />
 
 ---
 
