@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <link rel="icon" href="src/linux.png">
+    <title>Mohammad Yousefi · Linux Terminal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="linux-terminal">
+    <div class="term-bar">
+        <div class="term-buttons">
+            <div class="term-btn close"></div>
+            <div class="term-btn minimize"></div>
+            <div class="term-btn maximize"></div>
+        </div>
+        <div class="term-title">
+            <i>mohammad@fedora:~</i> — /home/mohammad/
+        </div>
+    </div>
+    <div class="terminal-body">
+        <div id="termOutput" class="terminal-output">
+        </div>
+        <div class="terminal-input-line">
+            <span class="prompt-prefix">┌─[mohammad@fedora]──[~]<br>└─╼$</span>
+            <input type="text" id="termInput" class="input-field" placeholder="type 'help' to start ..." autofocus>
+        </div>
+    </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
